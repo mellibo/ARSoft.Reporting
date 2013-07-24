@@ -30,6 +30,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Ionic.Zip">
+      <HintPath>..\ARSoft.Reporting\packages\NPOI.1.2.5\lib\net40\Ionic.Zip.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI">
+      <HintPath>..\ARSoft.Reporting\packages\NPOI.1.2.5\lib\net40\NPOI.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\ARSoft.Reporting\packages\NUnit.2.5.10.11092\lib\nunit.framework.dll</HintPath>
     </Reference>
@@ -55,6 +61,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ARSoft.Reporting\ARSoft.Reporting.csproj">
+      <Project>{8D12B580-9BDF-4BE1-9D81-417005F22B23}</Project>
+      <Name>ARSoft.Reporting</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

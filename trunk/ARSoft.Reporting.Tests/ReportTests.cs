@@ -1,7 +1,6 @@
 ﻿namespace ARSoft.Reporting.Tests
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -22,9 +21,9 @@
             var report = this.GetReport();
 
             // assert
-            var contents = report.Contents;
+            var contents = report.Contents as object;
             contents.Should().Not.Be.Null();
-            ((object)contents).Should().Be.InstanceOf<IEnumerable<ReportContent>>();
+            contents.Should().Be.InstanceOf<IEnumerable<ReportContent>>();
         }
 
         [Test]
@@ -78,48 +77,6 @@
         private ReportDefinition GetReport()
         {
             return new ReportDefinition();
-        }
-    }
-
-    public class ExcelRenderer
-    {
-        public void Render(IEnumerable datasource, ReportDefinition reportDefinition, string filename)
-        {
-            throw new System.NotImplementedException();
-        }
-    }
-
-    public class StaticContent : ReportContent
-    {
-        public string Text { get; set; }
-    }
-
-    public class ExpressionContent : ReportContent
-    {
-        public string Expression { get; set; }
-        
-        public int Position { get; set; }
-    }
-
-    public class ReportContent
-    {
-    }
-
-    public class ReportDefinition
-    {
-        readonly IList<ReportContent> reportContents = new List<ReportContent>();
-
-        public IEnumerable<ReportContent> Contents
-        {
-            get
-            {
-                return this.reportContents;
-            }
-        }
-
-        public void AddContent(ReportContent content)
-        {
-            this.reportContents.Add(content);
         }
     }
 
