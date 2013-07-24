@@ -1,6 +1,9 @@
 ﻿namespace ARSoft.Reporting.Tests
 {
+    using System;
+    using System.Collections;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
 
     using NUnit.Framework;
@@ -16,7 +19,7 @@
             // arrange
 
             // act
-            var report = new Report();
+            var report = this.GetReport();
 
             // assert
             var contents = report.Contents;
@@ -28,7 +31,7 @@
         public void AlContenidoSeLePuedeAgregarUnElementoParaMostrarUnaExpresionDelModelo()
         {
             // arrange
-            var report = new Report();
+            var report = this.GetReport();
 
 
             // act
@@ -40,6 +43,55 @@
             // assert
             report.Contents.FirstOrDefault(x => x.Equals(expresionContent)).Should().Not.Be.Null();
         }
+
+        [Test]
+        public void AlContenidoSeLePuedeAgregarUnTextoEstatico()
+        {
+            // arrange
+            var report = this.GetReport();
+
+            // act
+            var content = new StaticContent();
+            content.Text = "lalalala";
+            report.AddContent(content);
+
+            // assert
+            report.Contents.FirstOrDefault(x => x.Equals(content)).Should().Not.Be.Null();
+        }
+
+        [Test]
+        public void UnReportDefinitionSePuedeRenderizarComoExcel()
+        {
+            // arrange
+            var reportDefinition = this.GetReport();
+
+            // act
+            var excelRenderer = new ExcelRenderer();
+            string filename = "report.xls";
+            var datasource = new List<TestModel>();
+            excelRenderer.Render(datasource, reportDefinition, filename);
+
+            // assert
+            File.Exists(filename).Should().Be.True();
+        }
+
+        private ReportDefinition GetReport()
+        {
+            return new ReportDefinition();
+        }
+    }
+
+    public class ExcelRenderer
+    {
+        public void Render(IEnumerable datasource, ReportDefinition reportDefinition, string filename)
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
+    public class StaticContent : ReportContent
+    {
+        public string Text { get; set; }
     }
 
     public class ExpressionContent : ReportContent
@@ -53,7 +105,7 @@
     {
     }
 
-    public class Report
+    public class ReportDefinition
     {
         readonly IList<ReportContent> reportContents = new List<ReportContent>();
 
@@ -61,13 +113,33 @@
         {
             get
             {
-                return reportContents;
+                return this.reportContents;
             }
         }
 
-        public void AddContent(ExpressionContent expresionContent)
+        public void AddContent(ReportContent content)
         {
-            reportContents.Add(expresionContent);
+            this.reportContents.Add(content);
         }
+    }
+
+    public class TestModel
+    {
+        public string Nombre { get; set; }
+
+        public DateTime Fecha { get; set; }
+
+        public decimal Numero { get; set; }
+
+        public IEnumerable<TestModelHijo> Hijos { get; set; }
+    }
+
+    public class TestModelHijo
+    {
+        public string NombreHijo { get; set; }
+
+        public DateTime FechaHijo { get; set; }
+
+        public decimal NumeroHijo { get; set; }
     }
 }
