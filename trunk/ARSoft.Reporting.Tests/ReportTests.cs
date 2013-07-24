@@ -5,6 +5,8 @@
     using System.IO;
     using System.Linq;
 
+    using NPOI.HSSF.UserModel;
+
     using NUnit.Framework;
 
     using SharpTestsEx;
@@ -68,10 +70,17 @@
             var excelRenderer = new ExcelRenderer();
             string filename = "report.xls";
             var datasource = new List<TestModel>();
-            excelRenderer.Render(datasource, reportDefinition, filename);
+            using (var st = File.Create(filename))
+            {
+                excelRenderer.Render(datasource, reportDefinition, st);
+                st.Close();
+            }
 
             // assert
             File.Exists(filename).Should().Be.True();
+            var excelFile = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            HSSFWorkbook workbook;
+            Executing.This(() => workbook = new HSSFWorkbook(excelFile, true)).Should().NotThrow();
         }
 
         private ReportDefinition GetReport()
