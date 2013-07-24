@@ -4,7 +4,7 @@ namespace ARSoft.Reporting
     {
         public string Text { get; set; }
 
-        public override string GetText()
+        public override string GetText(object model)
         {
             return Text;
         }
