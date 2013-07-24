@@ -83,9 +83,47 @@
             Executing.This(() => workbook = new HSSFWorkbook(excelFile, true)).Should().NotThrow();
         }
 
+        [Test]
+        public void RenderizaEnExcelConExpresionesEstaticasCeldasDeterminadas()
+        {
+            // arrange
+            var reportDefinition = this.GetReport();
+
+            // act
+            var excelRenderer = new ExcelRenderer();
+            string filename = "report.xls";
+            var datasource = new List<TestModel>();
+            using (var st = File.Create(filename))
+            {
+                excelRenderer.Render(datasource, reportDefinition, st);
+                st.Close();
+            }
+
+            // assert
+            var excelFile = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            var workbook = new HSSFWorkbook(excelFile, true);
+            var sheet = workbook.GetSheet("hoja1");
+            foreach (var content in reportDefinition.Contents.OfType<StaticContent>())
+            {
+                sheet.GetRow(content.X.Value - 1).GetCell(content.Y.Value - 1).StringCellValue.Should().Be.EqualTo(content.Text);
+            }
+        }
+
         private ReportDefinition GetReport()
         {
-            return new ReportDefinition();
+            var reportDefinition = new ReportDefinition();
+            var staticContent = new StaticContent();
+            staticContent.Text = "pepe";
+            staticContent.X = 5;
+            staticContent.Y = 6;
+
+            staticContent = new StaticContent();
+            staticContent.Text = "pepe 2";
+            staticContent.X = 7;
+            staticContent.Y = 3;
+
+            reportDefinition.AddContent(staticContent);
+            return reportDefinition;
         }
     }
 
