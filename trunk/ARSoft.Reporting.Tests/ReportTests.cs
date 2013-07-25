@@ -1,6 +1,7 @@
 ﻿namespace ARSoft.Reporting.Tests
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -49,10 +50,10 @@
             var expresionContent = new ExpressionContent();
             expresionContent.Expression = "model.Nombre";
             expresionContent.Y = 2; 
-            report.AddContent(expresionContent);
+            report.Contents.AddContent(expresionContent);
 
             // assert
-            report.Contents.FirstOrDefault(x => x.Equals(expresionContent)).Should().Not.Be.Null();
+            report.Contents.Contents.FirstOrDefault(x => x.Equals(expresionContent)).Should().Not.Be.Null();
         }
 
         [Test]
@@ -64,10 +65,10 @@
             // act
             var content = new StaticContent();
             content.Text = "lalalala";
-            report.AddContent(content);
+            report.Contents.AddContent(content);
 
             // assert
-            report.Contents.FirstOrDefault(x => x.Equals(content)).Should().Not.Be.Null();
+            report.Contents.Contents.FirstOrDefault(x => x.Equals(content)).Should().Not.Be.Null();
         }
 
         [Test]
@@ -103,7 +104,7 @@
 
             // assert
             var sheet = GetSheet(filename);
-            foreach (var content in reportDefinition.Contents.OfType<StaticContent>())
+            foreach (var content in reportDefinition.Contents.Contents.OfType<StaticContent>())
             {
                 sheet.GetRow(content.X.Value - 1).GetCell(content.Y.Value - 1).StringCellValue.Should().Be.EqualTo(content.Text);
             }
@@ -125,23 +126,26 @@
             var sheet = GetSheet(filename);
 
             var content =
-                reportDefinition.Contents.OfType<ExpressionContent>().FirstOrDefault(
+                reportDefinition.Contents.Contents.OfType<ExpressionContent>().FirstOrDefault(
                     x => x.Expression == "model.NumeroEntero");
             sheet.GetRow(content.X.Value - 1).GetCell(content.Y.Value - 1).StringCellValue.Should().Be.EqualTo(datasource.NumeroEntero.ToString());
         }
 
         [Test]
-        public void AListContentLePasoUnaExpresionParaObtenerElListadoDesdeElModelo()
+        public void ListContentTieneUnaExpresionParaObtenerElListadoDesdeElModeloYenElWriteDebeIterarLaLista()
         {
             // arrange
-            var reportDefinition = new ReportDefinition();
+            var listContent = new ListContent();
+            var writer = new MockWriter();
+            writer.StartRender("nada");
 
             // act
-            var listContent = new ListContent();
             listContent.DataSourceExpression = "model"; // el modelo es la propia lista
-            reportDefinition.AddContent(listContent);
+            var datasourceList = GetDatasourceList() as IList;
+            listContent.Write(writer, datasourceList);
 
             // assert
+            writer.WriteCount.Should().Be.EqualTo(datasourceList.Count);
         }
 
         private static ISheet GetSheet(string filename)
@@ -181,22 +185,27 @@
             staticContent.Text = "pepe";
             staticContent.X = 5;
             staticContent.Y = 6;
-            reportDefinition.AddContent(staticContent);
+            reportDefinition.Contents.AddContent(staticContent);
 
             staticContent = new StaticContent();
             staticContent.Text = "pepe 2";
             staticContent.X = 7;
             staticContent.Y = 3;
-            reportDefinition.AddContent(staticContent);
+            reportDefinition.Contents.AddContent(staticContent);
 
             var expressionContent = new ExpressionContent();
             expressionContent.Expression = "model.NumeroEntero";
             expressionContent.Y = 2;
             expressionContent.X = 4;
-            reportDefinition.AddContent(expressionContent);
+            reportDefinition.Contents.AddContent(expressionContent);
             return reportDefinition;
         }
 
+    }
+
+    public class MockWriter : ExcelWriter
+    {
+        public int WriteCount { get; set; }
     }
 
     public class TestModel

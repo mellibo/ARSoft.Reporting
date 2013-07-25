@@ -1,22 +1,20 @@
 namespace ARSoft.Reporting
 {
-    using System.Collections.Generic;
-
     public class ReportDefinition
     {
-        readonly IList<ReportContent> reportContents = new List<ReportContent>();
+        private ReportContentContainer contents;
 
-        public IEnumerable<ReportContent> Contents
+        public ReportDefinition()
+        {
+            this.contents = new ReportContentContainer();
+        }
+
+        public ReportContentContainer Contents
         {
             get
             {
-                return this.reportContents;
+                return this.contents;
             }
-        }
-
-        public void AddContent(ReportContent content)
-        {
-            this.reportContents.Add(content);
         }
     }
 }

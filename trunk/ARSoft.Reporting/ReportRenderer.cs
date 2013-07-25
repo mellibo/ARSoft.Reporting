@@ -13,7 +13,7 @@ namespace ARSoft.Reporting
         {
             this.excelWriter.StartRender(filename);
             
-            foreach (var content in reportDefinition.Contents)
+            foreach (var content in reportDefinition.Contents.Contents)
             {
                 content.Write(this.excelWriter, datasource);
             }
