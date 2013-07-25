@@ -6,7 +6,7 @@ namespace ARSoft.Reporting
     {
         public string Expression { get; set; }
         
-        public override string GetText(object model)
+        public string EvaluateExpression(object model)
         {
             var context = new ExpressionContext();
             context.Variables.DefineVariable("model", model.GetType());
@@ -15,6 +15,11 @@ namespace ARSoft.Reporting
             context.Variables["model"] = model;
             var value = compiled.Evaluate();
             return value == null ? string.Empty : value.ToString();
+        }
+
+        public override void Write(ExcelWriter excelWriter, object datasource)
+        {
+            excelWriter.WriteTextElement(X, Y, this.EvaluateExpression(datasource));
         }
     }
 }

@@ -48,11 +48,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExcelRenderer.cs" />
+    <Compile Include="ExcelWriter.cs" />
     <Compile Include="ExpressionContent.cs" />
+    <Compile Include="GridContent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReportContent.cs" />
     <Compile Include="ReportDefinition.cs" />
+    <Compile Include="ReportRenderer.cs" />
     <Compile Include="StaticContent.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -15,7 +15,16 @@
     [TestFixture]
     public class ReportTests
     {
-        [Test]
+        private string filename;
+
+        [SetUp]
+        public void SetUp()
+        {
+            filename = "report.xls";
+            if (File.Exists(this.filename)) File.Delete(this.filename);
+        }
+        
+            [Test]
         public void ReportContieneUnaListaDeContenidos()
         {
             // arrange
@@ -69,13 +78,9 @@
             var datasource = GetDatasourceSimpleObject();
 
             // act
-            var excelRenderer = new ExcelRenderer();
-            string filename = "report.xls";
-            using (var st = File.Create(filename))
-            {
-                excelRenderer.Render(datasource, reportDefinition, st);
-                st.Close();
-            }
+            var excelWriter = CreateExcelWriter();
+            var renderer = new ReportRenderer(excelWriter);
+            renderer.Render(datasource, reportDefinition, this.filename);
 
             // assert
             File.Exists(filename).Should().Be.True();
@@ -92,13 +97,9 @@
             var datasource = GetDatasourceSimpleObject();
 
             // act
-            var excelRenderer = new ExcelRenderer();
-            string filename = "report.xls";
-            using (var st = File.Create(filename))
-            {
-                excelRenderer.Render(datasource, reportDefinition, st);
-                st.Close();
-            }
+            var excelWriter = CreateExcelWriter();
+            var renderer = new ReportRenderer(excelWriter);
+            renderer.Render(datasource, reportDefinition, filename);
 
             // assert
             var sheet = GetSheet(filename);
@@ -108,29 +109,17 @@
             }
         }
 
-        private static ISheet GetSheet(string filename)
-        {
-            var excelFile = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            var workbook = new HSSFWorkbook(excelFile, true);
-            var sheet = workbook.GetSheet("hoja1");
-            return sheet;
-        }
-
         [Test]
-        public void RenderizarUnaExpresionEvaluadaSobreElModeloEnUnaCeldaDeterminada()
+        public void RenderizarUnaExpresionEvaluadaSobreElModeloEnUnaPosicionDeterminada()
         {
             // arrange
             var reportDefinition = this.GetReport();
             var datasource = GetDatasourceSimpleObject();
 
             // act
-            var excelRenderer = new ExcelRenderer();
-            string filename = "report.xls";
-            using (var st = File.Create(filename))
-            {
-                excelRenderer.Render(datasource, reportDefinition, st);
-                st.Close();
-            }
+            var excelWriter = CreateExcelWriter();
+            var renderer = new ReportRenderer(excelWriter);
+            renderer.Render(datasource, reportDefinition, filename);
 
             // assert
             var sheet = GetSheet(filename);
@@ -141,6 +130,34 @@
             sheet.GetRow(content.X.Value - 1).GetCell(content.Y.Value - 1).StringCellValue.Should().Be.EqualTo(datasource.NumeroEntero.ToString());
         }
 
+        [Test]
+        public void AListContentLePasoUnaExpresionParaObtenerElListadoDesdeElModelo()
+        {
+            // arrange
+            var reportDefinition = new ReportDefinition();
+
+            // act
+            var listContent = new ListContent();
+            listContent.DataSourceExpression = "model"; // el modelo es la propia lista
+            reportDefinition.AddContent(listContent);
+
+            // assert
+        }
+
+        private static ISheet GetSheet(string filename)
+        {
+            var excelFile = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            var workbook = new HSSFWorkbook(excelFile, true);
+            var sheet = workbook.GetSheet("hoja1");
+            return sheet;
+        }
+
+        private static ExcelWriter CreateExcelWriter()
+        {
+            var excelWriter = new ExcelWriter();
+            return excelWriter;
+        }
+
         private static TestModel GetDatasourceSimpleObject()
         {
             var datasource = new TestModel
@@ -148,7 +165,7 @@
             return datasource;
         }
 
-        private static List<TestModel> GetDatasource()
+        private static List<TestModel> GetDatasourceList()
         {
             var datasource = new List<TestModel>();
             datasource.Add(new TestModel { Fecha = new DateTime(2000, 1, 2), Nombre = "pepe1", Numero = 1 });
@@ -179,6 +196,7 @@
             reportDefinition.AddContent(expressionContent);
             return reportDefinition;
         }
+
     }
 
     public class TestModel

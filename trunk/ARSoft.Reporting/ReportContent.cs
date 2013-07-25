@@ -6,6 +6,6 @@ namespace ARSoft.Reporting
         
         public int? Y { get; set; }
 
-        public abstract string GetText(object model);
+        public abstract void Write(ExcelWriter excelWriter, object datasource);
     }
 }
