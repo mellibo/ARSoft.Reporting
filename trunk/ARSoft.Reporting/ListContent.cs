@@ -13,6 +13,7 @@ namespace ARSoft.Reporting
 
         public override void Write(ExcelWriter excelWriter, object datasource)
         {
+
         }
     }
 }

@@ -1,25 +1,33 @@
 namespace ARSoft.Reporting
 {
-    using Ciloci.Flee;
-
     public class ExpressionContent : ReportContent
     {
-        public string Expression { get; set; }
-        
-        public string EvaluateExpression(object model)
-        {
-            var context = new ExpressionContext();
-            context.Variables.DefineVariable("model", model.GetType());
+        private readonly ExpressionEvaluator expressionEvaluator;
 
-            var compiled = context.CompileDynamic(Expression);
-            context.Variables["model"] = model;
-            var value = compiled.Evaluate();
-            return value == null ? string.Empty : value.ToString();
+        public ExpressionContent()
+        {
+            expressionEvaluator = new ExpressionEvaluator();
+            expressionEvaluator.ModelVariableName = "model";
+        }
+
+        public string Expression
+        {
+            get
+            {
+                return expressionEvaluator.Expression;
+            }
+            set
+            {
+                expressionEvaluator.Expression = value;
+            }
         }
 
         public override void Write(ExcelWriter excelWriter, object datasource)
         {
-            excelWriter.WriteTextElement(X, Y, this.EvaluateExpression(datasource));
+            expressionEvaluator.Compile(datasource.GetType());
+            var value = expressionEvaluator.EvaluateExpression(datasource);
+            var valueString = value == null ? string.Empty : value.ToString();
+            excelWriter.WriteTextElement(X, Y, valueString);
         }
     }
 }
