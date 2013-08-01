@@ -6,7 +6,16 @@ namespace ARSoft.Reporting
     using NPOI.HSSF.UserModel;
     using NPOI.SS.UserModel;
 
-    public class ExcelWriter
+    public interface IReportWriter
+    {
+        void StartRender(string filename);
+
+        void EndRender();
+
+        void WriteTextElement(int? x, int? y, string text);
+    }
+
+    public class ExcelWriter : IReportWriter
     {
         private string filename;
 

@@ -34,7 +34,7 @@
             var report = this.GetReport();
 
             // assert
-            var contents = report.Contents as object;
+            var contents = report.Contents.Contents as object;
             contents.Should().Not.Be.Null();
             contents.Should().Be.InstanceOf<IEnumerable<ReportContent>>();
         }
@@ -136,11 +136,12 @@
         {
             // arrange
             var listContent = new ListContent();
+            listContent.Content.AddContent(new StaticContent());
             var writer = new MockWriter();
             writer.StartRender("nada");
 
             // act
-            listContent.DataSourceExpression = "model"; // el modelo es la propia lista
+            //listContent.DataSourceExpression = "model"; // el modelo es la propia lista
             var datasourceList = GetDatasourceList() as IList;
             listContent.Write(writer, datasourceList);
 
@@ -203,9 +204,24 @@
 
     }
 
-    public class MockWriter : ExcelWriter
+    public class MockWriter : IReportWriter
     {
         public int WriteCount { get; set; }
+
+        public void StartRender(string filename)
+        {
+            WriteCount = 0;
+        }
+
+        public void EndRender()
+        {
+            
+        }
+
+        public void WriteTextElement(int? x, int? y, string text)
+        {
+            WriteCount++;
+        }
     }
 
     public class TestModel

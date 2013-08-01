@@ -22,7 +22,7 @@ namespace ARSoft.Reporting
             }
         }
 
-        public override void Write(ExcelWriter excelWriter, object datasource)
+        public override void Write(IReportWriter excelWriter, object datasource)
         {
             expressionEvaluator.Compile(datasource.GetType());
             var value = expressionEvaluator.EvaluateExpression(datasource);

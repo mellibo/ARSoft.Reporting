@@ -4,7 +4,7 @@ namespace ARSoft.Reporting
     {
         public string Text { get; set; }
 
-        public override void Write(ExcelWriter excelWriter, object datasource)
+        public override void Write(IReportWriter excelWriter, object datasource)
         {
             excelWriter.WriteTextElement(X, Y, Text);
         }
