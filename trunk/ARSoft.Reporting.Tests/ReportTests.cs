@@ -207,13 +207,15 @@
         public void ListContentCreaUnaNuevaFilaPorCadaItem()
         {
             // arrange
-
+            var listContent = new ListContent();
+            var writer = new MockWriter();
 
             // act
+            listContent.Write(writer, GetDatasourceList());
 
 
             // assert
-            Assert.Inconclusive();
+            writer.RowCount.Should().Be.EqualTo(3);
         }
 
 
@@ -292,11 +294,22 @@
 
     public class MockWriter : IReportWriter
     {
+        private int rowCount;
+
         public int WriteCount { get; set; }
+
+        public int RowCount
+        {
+            get
+            {
+                return rowCount;
+            }
+        }
 
         public void StartRender(string filename)
         {
             WriteCount = 0;
+            rowCount = 0;
         }
 
         public void EndRender()
@@ -311,7 +324,7 @@
 
         public void NewRow()
         {
-            
+            rowCount++;
         }
     }
 
