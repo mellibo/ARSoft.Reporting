@@ -106,7 +106,7 @@
             var sheet = GetSheet(filename);
             foreach (var content in reportDefinition.Contents.Contents.OfType<StaticContent>())
             {
-                sheet.GetRow(content.X.Value - 1).GetCell(content.Y.Value - 1).StringCellValue.Should().Be.EqualTo(content.Text);
+                sheet.GetRow(content.X.Value).GetCell(content.Y.Value).StringCellValue.Should().Be.EqualTo(content.Text);
             }
         }
 
@@ -128,7 +128,7 @@
             var content =
                 reportDefinition.Contents.Contents.OfType<ExpressionContent>().FirstOrDefault(
                     x => x.Expression == "model.NumeroEntero");
-            sheet.GetRow(content.X.Value - 1).GetCell(content.Y.Value - 1).StringCellValue.Should().Be.EqualTo(datasource.NumeroEntero.ToString());
+            sheet.GetRow(content.X.Value).GetCell(content.Y.Value).StringCellValue.Should().Be.EqualTo(datasource.NumeroEntero.ToString());
         }
 
         [Test]
@@ -148,6 +148,74 @@
             // assert
             writer.WriteCount.Should().Be.EqualTo(datasourceList.Count);
         }
+
+        [Test]
+        public void ListContentEnExcelGeneraCadaItemEnUnaFila()
+        {
+            // arrange
+            var listContent = new ListContent();
+            var nombreContent = new ExpressionContent();
+            nombreContent.Expression = "model.Nombre";
+            listContent.Content.AddContent(nombreContent);
+            var fechaContent = new ExpressionContent();
+            fechaContent.Expression = "model.Fecha";
+            listContent.Content.AddContent(fechaContent);
+            var writer = new ExcelWriter();
+            var datasource = GetDatasourceList();
+
+            // act
+            writer.StartRender(this.filename);
+            listContent.Write(writer, datasource);
+            writer.EndRender();
+
+            // assert
+            var sheet = GetSheet(this.filename);
+            var i = 0;
+            foreach (var item in datasource)
+            {
+                var row = sheet.GetRow(i);
+                row.Should("cantidad de rows = items").Not.Be.Null();
+                row.GetCell(0).StringCellValue.Should().Be.EqualTo(item.Nombre);
+                row.GetCell(1).StringCellValue.Should().Be.EqualTo(item.Fecha.ToString());
+                i++;
+            }
+        }
+
+        [Test]
+        public void EnExcelSiElContenidoNoTieneCoordenadasDebenIrEnColumnasContiguas()
+        {
+            // arrange
+            var reportDefinition = this.GetReportSinCoordenadas();
+            var datasource = GetDatasourceSimpleObject();
+            var excelWriter = CreateExcelWriter();
+
+            // act
+            var renderer = new ReportRenderer(excelWriter);
+            renderer.Render(datasource, reportDefinition, this.filename);
+
+            // assert
+            var sheet = GetSheet(this.filename);
+
+            var row = sheet.GetRow(0);
+            for (int i = 0; i < reportDefinition.Contents.Contents.Count(); i++)
+            {
+                row.Cells[i].ColumnIndex.Should().Be.EqualTo(i);
+            }
+        }
+
+        [Test]
+        public void ListContentCreaUnaNuevaFilaPorCadaItem()
+        {
+            // arrange
+
+
+            // act
+
+
+            // assert
+            Assert.Inconclusive();
+        }
+
 
         private static ISheet GetSheet(string filename)
         {
@@ -202,6 +270,24 @@
             return reportDefinition;
         }
 
+        private ReportDefinition GetReportSinCoordenadas()
+        {
+            var reportDefinition = new ReportDefinition();
+            var staticContent = new StaticContent();
+            staticContent.Text = "pepe";
+            reportDefinition.Contents.AddContent(staticContent);
+
+            staticContent = new StaticContent();
+            staticContent.Text = "pepe 2";
+            reportDefinition.Contents.AddContent(staticContent);
+
+            staticContent = new StaticContent();
+            staticContent.Text = "pepe 3";
+            reportDefinition.Contents.AddContent(staticContent);
+
+            return reportDefinition;
+        }
+
     }
 
     public class MockWriter : IReportWriter
@@ -221,6 +307,11 @@
         public void WriteTextElement(int? x, int? y, string text)
         {
             WriteCount++;
+        }
+
+        public void NewRow()
+        {
+            
         }
     }
 

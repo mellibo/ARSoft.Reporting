@@ -35,6 +35,7 @@ namespace ARSoft.Reporting
                 {
                     reportContent.Write(excelWriter, item);
                 }
+                excelWriter.NewRow();
             }
         }
 
