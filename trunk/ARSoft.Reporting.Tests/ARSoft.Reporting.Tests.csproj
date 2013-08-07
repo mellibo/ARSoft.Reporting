@@ -56,8 +56,15 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DatasourceFactory.cs" />
+    <Compile Include="ListContentTests.cs" />
+    <Compile Include="MockWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReportTests.cs" />
+    <Compile Include="ReportDefinitionTests.cs" />
+    <Compile Include="ReportFactory.cs" />
+    <Compile Include="ExcelWriterTests.cs" />
+    <Compile Include="TestModel.cs" />
+    <Compile Include="TestModelHijo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -16,6 +16,7 @@ namespace ARSoft.Reporting
             {
                 return expressionEvaluator.Expression;
             }
+
             set
             {
                 expressionEvaluator.Expression = value;

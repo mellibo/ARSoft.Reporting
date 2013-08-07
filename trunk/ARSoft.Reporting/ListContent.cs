@@ -16,12 +16,27 @@ namespace ARSoft.Reporting
 
         public override void Write(IReportWriter excelWriter, object datasource)
         {
-            IEnumerable internalDatasource = null;
-            if (!string.IsNullOrWhiteSpace(DataSourceExpression))
+            var internalDatasource = this.GetInternalDatasource(datasource);
+
+            foreach (var item in internalDatasource)
             {
-                ExpressionEvaluator evaluator = new ExpressionEvaluator();
+                foreach (var reportContent in contents.Contents)
+                {
+                    reportContent.Write(excelWriter, item);
+                }
+
+                excelWriter.NewRow();
+            }
+        }
+
+        private IEnumerable GetInternalDatasource(object datasource)
+        {
+            IEnumerable internalDatasource;
+            if (!string.IsNullOrWhiteSpace(this.DataSourceExpression))
+            {
+                var evaluator = new ExpressionEvaluator();
                 evaluator.ModelVariableName = Guid.NewGuid().ToString();
-                evaluator.Expression = DataSourceExpression;
+                evaluator.Expression = this.DataSourceExpression;
                 evaluator.Compile(datasource.GetType());
                 internalDatasource = evaluator.EvaluateExpression(datasource) as IEnumerable;
             }
@@ -29,14 +44,8 @@ namespace ARSoft.Reporting
             {
                 internalDatasource = datasource as IEnumerable;
             }
-            foreach (var item in internalDatasource)
-            {
-                foreach (var reportContent in contents.Contents)
-                {
-                    reportContent.Write(excelWriter, item);
-                }
-                excelWriter.NewRow();
-            }
+
+            return internalDatasource;
         }
 
         public ReportContentContainer Content

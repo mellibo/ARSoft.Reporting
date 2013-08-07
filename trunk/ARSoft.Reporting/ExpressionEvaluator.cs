@@ -4,7 +4,7 @@ namespace ARSoft.Reporting
 
     using Ciloci.Flee;
 
-    class ExpressionEvaluator
+    public class ExpressionEvaluator
     {
         private IDynamicExpression compiled;
 
