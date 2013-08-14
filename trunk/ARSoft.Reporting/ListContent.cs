@@ -17,7 +17,8 @@ namespace ARSoft.Reporting
         public override void Write(IReportWriter excelWriter, object datasource)
         {
             var internalDatasource = this.GetInternalDatasource(datasource);
-
+            excelWriter.Context.ItemNumber = 1;
+            
             foreach (var item in internalDatasource)
             {
                 foreach (var reportContent in contents.Contents)
@@ -26,6 +27,7 @@ namespace ARSoft.Reporting
                 }
 
                 if (Direction == DirectionEnum.Vertical) excelWriter.CrLf();
+                excelWriter.Context.ItemNumber++;
             }
         }
 
@@ -57,6 +59,5 @@ namespace ARSoft.Reporting
         }
 
         public DirectionEnum Direction { get; set; }
-
     }
 }

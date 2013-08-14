@@ -100,7 +100,7 @@
             var fechaContent = new ExpressionContent();
             fechaContent.Expression = "model.Fecha";
             listContent.Content.AddContent(fechaContent);
-            var writer = new ExcelWriter();
+            var writer = WriterFactory.ExcelWriter();
             var datasource = DatasourceFactory.GetDatasourceList();
             var streamToWrite = this.GetStreamToWrite();
 
@@ -158,7 +158,7 @@
 
         private static ExcelWriter CreateExcelWriter()
         {
-            var excelWriter = new ExcelWriter();
+            var excelWriter = WriterFactory.ExcelWriter();
             return excelWriter;
         }
     }

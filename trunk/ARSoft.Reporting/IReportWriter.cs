@@ -1,5 +1,6 @@
 namespace ARSoft.Reporting
 {
+    using System.Dynamic;
     using System.IO;
 
     public interface IReportWriter
@@ -13,5 +14,7 @@ namespace ARSoft.Reporting
         void WriteTextElement(int? x, int? y, string text);
 
         void CrLf();
+
+        RenderContext Context { get; }
     }
 }

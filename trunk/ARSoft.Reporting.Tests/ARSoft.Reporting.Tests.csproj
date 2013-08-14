@@ -66,6 +66,7 @@
     <Compile Include="ExcelWriterTests.cs" />
     <Compile Include="TestModel.cs" />
     <Compile Include="TestModelHijo.cs" />
+    <Compile Include="WriterFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

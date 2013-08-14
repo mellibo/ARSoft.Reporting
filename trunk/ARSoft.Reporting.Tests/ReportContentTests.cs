@@ -1,9 +1,11 @@
-﻿using NUnit.Framework;
-
-using SharpTestsEx;
-
-namespace ARSoft.Reporting.Tests
+﻿namespace ARSoft.Reporting.Tests
 {
+    using System;
+
+    using NUnit.Framework;
+
+    using SharpTestsEx;
+
     [TestFixture]
     public class ReportContentTests
     {
@@ -25,7 +27,7 @@ namespace ARSoft.Reporting.Tests
         {
             // arrange
             var datasource = DatasourceFactory.GetDatasourceSimpleObject();
-            var writer = new MockWriter();
+            var writer = WriterFactory.MockWriter();
 
             // act
             var content = new ExpressionContent();
@@ -36,7 +38,20 @@ namespace ARSoft.Reporting.Tests
             writer.LastWritedText.Should().Be.EqualTo(datasource.Nombre);
         }
 
+        [Test]
+        public void LaExpresionDeExpresionContentPuedeIncluirVariablesDeContextoComoFecha()
+        {
+            // arrange
+            var datasource = DatasourceFactory.GetDatasourceSimpleObject();
+            var writer = WriterFactory.MockWriter();
 
+            // act
+            var content = new ExpressionContent();
+            content.Expression = @"Context.Date.ToString(""dd/MM/yyyy"")";
+            content.Write(writer, datasource);
 
+            // assert
+            writer.LastWritedText.Should().Be.EqualTo(DateTime.Today.ToString("dd/MM/yyyy"));
+        }
     }
 }

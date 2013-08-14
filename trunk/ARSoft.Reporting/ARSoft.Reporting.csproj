@@ -55,6 +55,7 @@
     <Compile Include="IReportWriter.cs" />
     <Compile Include="ListContent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RenderContext.cs" />
     <Compile Include="ReportContent.cs" />
     <Compile Include="ReportContentContainer.cs" />
     <Compile Include="ReportDefinition.cs" />

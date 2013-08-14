@@ -25,6 +25,7 @@ namespace ARSoft.Reporting
 
         public override void Write(IReportWriter excelWriter, object datasource)
         {
+            expressionEvaluator.AddVariable("Context", excelWriter.Context);
             expressionEvaluator.Compile(datasource.GetType());
             var value = expressionEvaluator.EvaluateExpression(datasource);
             var valueString = value == null ? string.Empty : value.ToString();

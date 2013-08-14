@@ -1,6 +1,7 @@
 namespace ARSoft.Reporting
 {
     using System;
+    using System.Dynamic;
     using System.IO;
 
     using NPOI.HSSF.UserModel;
@@ -8,6 +9,8 @@ namespace ARSoft.Reporting
 
     public class ExcelWriter : IReportWriter
     {
+        private readonly RenderContext context;
+
         private Stream streamToWrite;
 
         private HSSFWorkbook workbook;
@@ -15,10 +18,12 @@ namespace ARSoft.Reporting
         private ISheet sheet;
 
         private int lastX;
+
         private int lastY;
 
-        public ExcelWriter()
+        public ExcelWriter(RenderContext context)
         {
+            this.context = context;
             this.lastX = 0;
             this.lastY = -1;
         }
@@ -64,6 +69,14 @@ namespace ARSoft.Reporting
         {
             this.lastX++;
             this.lastY = -1;
+        }
+
+        public RenderContext Context
+        {
+            get
+            {
+                return this.context;
+            }
         }
 
         private void CreateWorkbook(string template)
