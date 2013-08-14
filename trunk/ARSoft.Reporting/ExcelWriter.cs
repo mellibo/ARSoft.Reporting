@@ -6,20 +6,9 @@ namespace ARSoft.Reporting
     using NPOI.HSSF.UserModel;
     using NPOI.SS.UserModel;
 
-    public interface IReportWriter
-    {
-        void StartRender(string filename);
-
-        void EndRender();
-
-        void WriteTextElement(int? x, int? y, string text);
-
-        void NewRow();
-    }
-
     public class ExcelWriter : IReportWriter
     {
-        private string filename;
+        private Stream streamToWrite;
 
         private HSSFWorkbook workbook;
 
@@ -34,25 +23,27 @@ namespace ARSoft.Reporting
             this.lastY = -1;
         }
 
-        public void StartRender(string filename)
+        public void StartRender(Stream streamToWrite)
         {
-            if (filename == null)
+            StartRender(streamToWrite, null);
+        }
+
+        public void StartRender(Stream streamToWrite, string template)
+        {
+            if (streamToWrite == null)
             {
-                throw new ArgumentNullException("filename");
+                throw new ArgumentNullException("streamToWrite");
             }
 
-            if (this.workbook == null) this.workbook = new HSSFWorkbook();
-            if (this.sheet == null) this.sheet = this.workbook.CreateSheet("hoja1");
-            this.filename = filename;            
+            this.CreateWorkbook(template);
+
+            this.sheet = this.workbook.GetSheet("hoja1") ?? this.workbook.CreateSheet("hoja1");
+            this.streamToWrite = streamToWrite;            
         }
 
         public void EndRender()
         {
-            using (var st = new FileStream(this.filename, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-            {
-                this.workbook.Write(st);
-                st.Close();
-            }
+            this.workbook.Write(this.streamToWrite);
         }
 
         public void WriteTextElement(int? x, int? y, string text)
@@ -66,10 +57,28 @@ namespace ARSoft.Reporting
             cell.SetCellValue(text);
         }
 
-        public void NewRow()
+        /// <summary>
+        /// Carriage Return, Line Feed
+        /// </summary>
+        public void CrLf()
         {
             this.lastX++;
             this.lastY = -1;
+        }
+
+        private void CreateWorkbook(string template)
+        {
+            if (string.IsNullOrWhiteSpace(template))
+            {
+                this.workbook = new HSSFWorkbook();
+            }
+            else
+            {
+                using (var fs = new FileStream(template, FileMode.Open, FileAccess.Read))
+                {
+                    this.workbook = new HSSFWorkbook(fs, true);
+                }
+            }
         }
     }
 }

@@ -1,5 +1,7 @@
 namespace ARSoft.Reporting.Tests
 {
+    using System.IO;
+
     public class MockWriter : IReportWriter
     {
         private int rowCount;
@@ -24,7 +26,12 @@ namespace ARSoft.Reporting.Tests
             }
         }
 
-        public void StartRender(string filename)
+        public void StartRender(Stream streamToWrite)
+        {
+            this.StartRender(streamToWrite, null);
+        }
+
+        public void StartRender(Stream streamToWrite, string template)
         {
             this.WriteCount = 0;
             this.rowCount = 0;
@@ -41,7 +48,7 @@ namespace ARSoft.Reporting.Tests
             this.WriteCount++;
         }
 
-        public void NewRow()
+        public void CrLf()
         {
             this.rowCount++;
         }

@@ -9,7 +9,6 @@
     [TestFixture]
     public class ListContentTests
     {
-
         [Test]
         public void ListContentTieneUnaExpresionParaObtenerElListadoDesdeElModeloYenElWriteDebeIterarLaLista()
         {
@@ -17,7 +16,7 @@
             var listContent = new Reporting.ListContent();
             listContent.Content.AddContent(new StaticContent());
             var writer = new MockWriter();
-            writer.StartRender("nada");
+            writer.StartRender(null);
 
             // act
             var datasourceList = DatasourceFactory.GetDatasourceList();
@@ -39,6 +38,25 @@
 
             // assert
             writer.RowCount.Should().Be.EqualTo(3);
+        }
+
+        [Test]
+        public void ListContentPuedeIterarHorizontalmente()
+        {
+            // arrange
+            var listContent = new Reporting.ListContent();
+            listContent.Content.AddContent(new StaticContent());
+            var writer = new MockWriter();
+            writer.StartRender(null);
+
+            // act
+            listContent.Direction = DirectionEnum.Horinzontal;
+            var datasourceList = DatasourceFactory.GetDatasourceList();
+            listContent.Write(writer, datasourceList);
+
+            // assert
+            writer.RowCount.Should().Be.EqualTo(0);
+            writer.WriteCount.Should().Be.EqualTo(datasourceList.Count);
         }
 
     }

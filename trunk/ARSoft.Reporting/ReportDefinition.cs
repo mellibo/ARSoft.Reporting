@@ -16,5 +16,17 @@ namespace ARSoft.Reporting
                 return this.contents;
             }
         }
+
+        public string Template
+        {
+            get
+            {
+                throw new System.NotImplementedException();
+            }
+            set
+            {
+                throw new System.NotImplementedException();
+            }
+        }
     }
 }

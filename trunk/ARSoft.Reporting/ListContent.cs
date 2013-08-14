@@ -25,7 +25,7 @@ namespace ARSoft.Reporting
                     reportContent.Write(excelWriter, item);
                 }
 
-                excelWriter.NewRow();
+                if (Direction == DirectionEnum.Vertical) excelWriter.CrLf();
             }
         }
 
@@ -55,5 +55,8 @@ namespace ARSoft.Reporting
                 return this.contents;
             }
         }
+
+        public DirectionEnum Direction { get; set; }
+
     }
 }

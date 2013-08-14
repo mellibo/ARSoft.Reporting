@@ -1,5 +1,7 @@
 namespace ARSoft.Reporting
 {
+    using System.IO;
+
     public class ReportRenderer
     {
         private readonly ExcelWriter excelWriter;
@@ -9,9 +11,9 @@ namespace ARSoft.Reporting
             this.excelWriter = excelWriter;
         }
 
-        public void Render(object datasource, ReportDefinition reportDefinition, string filename)
+        public void Render(object datasource, ReportDefinition reportDefinition, Stream streamToWrite)
         {
-            this.excelWriter.StartRender(filename);
+            this.excelWriter.StartRender(streamToWrite);
             
             foreach (var content in reportDefinition.Contents.Contents)
             {

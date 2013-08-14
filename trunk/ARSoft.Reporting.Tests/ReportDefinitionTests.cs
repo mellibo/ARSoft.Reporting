@@ -38,21 +38,5 @@
             // assert
             report.Contents.Contents.FirstOrDefault(x => x.Equals(content)).Should().Not.Be.Null();
         }
-
-        [Test]
-        public void HayUnContenidoQueEsUnaExpresionEvaluadaSobreElModelo()
-        {
-            // arrange
-            var datasource = DatasourceFactory.GetDatasourceSimpleObject();
-            var writer = new MockWriter();
-
-            // act
-            var content = new ExpressionContent();
-            content.Expression = "model.Nombre";
-            content.Write(writer, datasource);
-
-            // assert
-            writer.LastWritedText.Should().Be.EqualTo(datasource.Nombre);
-        }
     }
 }

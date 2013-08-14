@@ -14,6 +14,7 @@
     public class ExcelWriterTests
     {
         private string filename;
+        //TODO usar directametne ExcelWriter y no ReportDedinition
 
         [SetUp]
         public void SetUp()
@@ -28,15 +29,17 @@
             // arrange
             var reportDefinition = ReportFactory.GetReport();
             var datasource = DatasourceFactory.GetDatasourceSimpleObject();
+            var streamToWrite = this.GetStreamToWrite();
 
             // act
             var excelWriter = CreateExcelWriter();
             var renderer = new ReportRenderer(excelWriter);
-            renderer.Render(datasource, reportDefinition, this.filename);
+            renderer.Render(datasource, reportDefinition, streamToWrite);
+            streamToWrite.Close();
 
             // assert
             File.Exists(this.filename).Should().Be.True();
-            var excelFile = new FileStream(this.filename, FileMode.Open, FileAccess.Read);
+            var excelFile = this.GetStreamToWrite();
             Executing.This(() => new HSSFWorkbook(excelFile, true)).Should().NotThrow();
         }
 
@@ -46,11 +49,13 @@
             // arrange
             var reportDefinition = ReportFactory.GetReport();
             var datasource = DatasourceFactory.GetDatasourceSimpleObject();
+            var streamToWrite = this.GetStreamToWrite();
 
             // act
             var excelWriter = CreateExcelWriter();
             var renderer = new ReportRenderer(excelWriter);
-            renderer.Render(datasource, reportDefinition, this.filename);
+            renderer.Render(datasource, reportDefinition, streamToWrite);
+            streamToWrite.Close();
 
             // assert
             var sheet = GetSheet(this.filename);
@@ -67,10 +72,12 @@
             var reportDefinition = ReportFactory.GetReportSinCoordenadas();
             var datasource = DatasourceFactory.GetDatasourceSimpleObject();
             var excelWriter = CreateExcelWriter();
+            var streamToWrite = this.GetStreamToWrite();
 
             // act
             var renderer = new ReportRenderer(excelWriter);
-            renderer.Render(datasource, reportDefinition, this.filename);
+            renderer.Render(datasource, reportDefinition, streamToWrite);
+            streamToWrite.Close();
 
             // assert
             var sheet = GetSheet(this.filename);
@@ -95,11 +102,13 @@
             listContent.Content.AddContent(fechaContent);
             var writer = new ExcelWriter();
             var datasource = DatasourceFactory.GetDatasourceList();
+            var streamToWrite = this.GetStreamToWrite();
 
             // act
-            writer.StartRender(this.filename);
+            writer.StartRender(streamToWrite);
             listContent.Write(writer, datasource);
             writer.EndRender();
+            streamToWrite.Close();
 
             // assert
             var sheet = GetSheet(this.filename);
@@ -112,6 +121,31 @@
                 row.GetCell(1).StringCellValue.Should().Be.EqualTo(item.Fecha.ToString());
                 i++;
             }
+        }
+
+        [Test]
+        public void SePuedeREnderizarSobreUnaPlantilla()
+        {
+            // arrange
+            var writer = CreateExcelWriter();
+            var stream = this.GetStreamToWrite();
+
+            // act
+            var template = "template.xlt";
+            writer.StartRender(stream, template);
+            writer.WriteTextElement(null, null, "pepe");
+            writer.EndRender();
+            stream.Close();
+
+            // assert
+            var sheet = GetSheet(this.filename);
+            sheet.GetRow(0).GetCell(5, MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
+                "template");
+        }
+
+        private FileStream GetStreamToWrite()
+        {
+            return File.Open(this.filename, FileMode.OpenOrCreate, FileAccess.ReadWrite);
         }
 
         private static ISheet GetSheet(string filename)
