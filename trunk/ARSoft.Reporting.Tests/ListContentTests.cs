@@ -6,11 +6,13 @@
 
     using SharpTestsEx;
 
+    using System.Linq;
+
     [TestFixture]
     public class ListContentTests
     {
         [Test]
-        public void ListContentTieneUnaExpresionParaObtenerElListadoDesdeElModeloYenElWriteDebeIterarLaLista()
+        public void ListContentEnElWriteDebeIterarLaLista()
         {
             // arrange
             var listContent = ListContentWith1StaticContent();
@@ -24,9 +26,25 @@
             writer.WriteCount.Should().Be.EqualTo(datasourceList.Count);
         }
 
+        [Test]
+        public void ListContentDatasourceConUnaExpresionParaObtenerElListadoDesdeElModelo()
+        {
+            // arrange
+            var listContent = ListContentWith1StaticContent();
+            var writer = WriterFactory.MockWriter();
+
+            // act
+            var datasource = DatasourceFactory.GetDatasourceSimpleObject();
+            listContent.DataSourceExpression = "model.Hijos";
+            listContent.Write(writer, datasource);
+
+            // assert
+            writer.WriteCount.Should().Be.EqualTo(datasource.Hijos.Count());
+        }
+
         private static ListContent ListContentWith1StaticContent()
         {
-            var listContent = new Reporting.ListContent();
+            var listContent = new ListContent();
             listContent.Content.AddContent(new StaticContent());
             return listContent;
         }
@@ -35,7 +53,7 @@
         public void ListContentCreaUnaNuevaFilaPorCadaItem()
         {
             // arrange
-            var listContent = new ListContent();
+            var listContent = ListContentWith1StaticContent();
             var writer = WriterFactory.MockWriter();
 
             // act
@@ -43,6 +61,23 @@
 
             // assert
             writer.RowCount.Should().Be.EqualTo(3);
+        }
+
+        [Test]
+        public void ListContentEmpiezaARenderizarDesdeUnaPosicionXY()
+        {
+            // arrange
+            var listContent = ListContentWith1StaticContent();
+            var writer = WriterFactory.MockWriter();
+
+            // act
+            listContent.X = 5;
+            listContent.Y = 2;
+            listContent.Write(writer, DatasourceFactory.GetDatasourceList());
+
+            // assert
+            writer.WritedElements.First().X.Should().Be.EqualTo(listContent.X);
+            writer.WritedElements.First().Y.Should().Be.EqualTo(listContent.Y);
         }
 
         [Test]
@@ -75,9 +110,9 @@
             listContent.Write(writer, datasourceList);
 
             // assert
-            for (int i = 0; i < writer.TextWrited.Count; i++)
+            for (int i = 0; i < writer.TextWrited.Count(); i++)
             {
-                writer.TextWrited[i].Should().Be.EqualTo((i + 1).ToString());
+                writer.WritedElements.ToArray()[i].Text.Should().Be.EqualTo((i + 1).ToString());
             }
         }
     }

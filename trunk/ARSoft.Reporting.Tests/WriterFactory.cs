@@ -12,7 +12,7 @@
 
         public static ExcelWriter ExcelWriter()
         {
-            return new ExcelWriter(new RenderContext());
+            return new ExcelWriter();
         }
     }
 }

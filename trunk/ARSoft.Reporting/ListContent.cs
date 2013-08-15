@@ -16,6 +16,8 @@ namespace ARSoft.Reporting
 
         public override void Write(IReportWriter excelWriter, object datasource)
         {
+            if (this.X.HasValue) excelWriter.SetCurrentX(this.X.Value);
+            if (this.Y.HasValue) excelWriter.SetCurrentY(this.Y.Value);
             var internalDatasource = this.GetInternalDatasource(datasource);
             excelWriter.Context.ItemNumber = 1;
             
@@ -37,7 +39,7 @@ namespace ARSoft.Reporting
             if (!string.IsNullOrWhiteSpace(this.DataSourceExpression))
             {
                 var evaluator = new ExpressionEvaluator();
-                evaluator.ModelVariableName = Guid.NewGuid().ToString();
+                evaluator.ModelVariableName = "model";
                 evaluator.Expression = this.DataSourceExpression;
                 evaluator.Compile(datasource.GetType());
                 internalDatasource = evaluator.EvaluateExpression(datasource) as IEnumerable;

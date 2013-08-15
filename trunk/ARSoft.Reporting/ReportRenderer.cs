@@ -13,7 +13,12 @@ namespace ARSoft.Reporting
 
         public void Render(object datasource, ReportDefinition reportDefinition, Stream streamToWrite)
         {
-            this.excelWriter.StartRender(streamToWrite);
+            Render(datasource, reportDefinition, streamToWrite, null);
+        }
+
+        public void Render(object datasource, ReportDefinition reportDefinition, Stream streamToWrite, string template)
+        {
+            this.excelWriter.StartRender(streamToWrite, template);
             
             foreach (var content in reportDefinition.Contents.Contents)
             {

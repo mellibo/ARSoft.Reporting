@@ -9,7 +9,7 @@ namespace ARSoft.Reporting
 
     public class ExcelWriter : IReportWriter
     {
-        private readonly RenderContext context;
+        private RenderContext context;
 
         private Stream streamToWrite;
 
@@ -21,9 +21,8 @@ namespace ARSoft.Reporting
 
         private int lastY;
 
-        public ExcelWriter(RenderContext context)
+        public ExcelWriter()
         {
-            this.context = context;
             this.lastX = 0;
             this.lastY = -1;
         }
@@ -40,6 +39,8 @@ namespace ARSoft.Reporting
                 throw new ArgumentNullException("streamToWrite");
             }
 
+            this.context = new RenderContext();
+            
             this.CreateWorkbook(template);
 
             this.sheet = this.workbook.GetSheet("hoja1") ?? this.workbook.CreateSheet("hoja1");
@@ -77,6 +78,16 @@ namespace ARSoft.Reporting
             {
                 return this.context;
             }
+        }
+
+        public void SetCurrentX(int x)
+        {
+            this.lastX = x;
+        }
+
+        public void SetCurrentY(int y)
+        {
+            this.lastY = y;
         }
 
         private void CreateWorkbook(string template)

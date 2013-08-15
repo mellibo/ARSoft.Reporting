@@ -4,22 +4,34 @@ namespace ARSoft.Reporting.Tests
     using System.Dynamic;
     using System.IO;
 
+    using System.Linq;
+
     public class MockWriter : IReportWriter
     {
+        //TODO MockWriter tiene logica de manejo de xy que debe estar en un SUT en lugar de un mock
+
         private readonly RenderContext context;
 
+        private int lastX;
+
+        private int lastY;
+
+        private List<TextElement> textWrited;
+        
         private int rowCount;
-
-        private string lastWritedText;
-
-        private List<string> textWrited;
 
         public MockWriter(RenderContext context)
         {
             this.context = context;
         }
 
-        public int WriteCount { get; set; }
+        public int WriteCount
+        {
+            get
+            {
+                return this.textWrited.Count;
+            }
+        }
 
         public int RowCount
         {
@@ -33,15 +45,23 @@ namespace ARSoft.Reporting.Tests
         {
             get
             {
-                return lastWritedText;
+                return this.textWrited.Last().Text;
             }
         }
 
-        public List<string> TextWrited
+        public IEnumerable<TextElement> WritedElements
         {
             get
             {
-                return textWrited;
+                return this.textWrited.ToArray();
+            }
+        }
+
+        public IEnumerable<string> TextWrited
+        {
+            get
+            {
+                return this.textWrited.Select(x => x.Text);
             }
         }
 
@@ -52,8 +72,7 @@ namespace ARSoft.Reporting.Tests
 
         public void StartRender(Stream streamToWrite, string template)
         {
-            this.textWrited = new List<string>();
-            this.WriteCount = 0;
+            this.textWrited = new List<TextElement>();
             this.rowCount = 0;
         }
 
@@ -64,9 +83,12 @@ namespace ARSoft.Reporting.Tests
 
         public void WriteTextElement(int? x, int? y, string text)
         {
-            this.lastWritedText = text;
-            this.WriteCount++;
-            textWrited.Add(text);
+            if (!x.HasValue) x = lastX;
+            if (!y.HasValue) y = ++lastY;
+            lastX = x.Value;
+            lastY = y.Value;
+
+            this.textWrited.Add(new TextElement{ Text = text, X = x, Y = y });
         }
 
         public void CrLf()
@@ -81,5 +103,24 @@ namespace ARSoft.Reporting.Tests
                 return this.context;
             }
         }
+
+        public void SetCurrentX(int x)
+        {
+            this.lastX = x;
+        }
+
+        public void SetCurrentY(int y)
+        {
+            this.lastY = y - 1;
+        }
+    }
+
+    public class TextElement
+    {
+        public string Text { get; set; }
+
+        public int? X { get; set; }
+
+        public int? Y { get; set; }
     }
 }

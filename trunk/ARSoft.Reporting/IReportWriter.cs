@@ -16,5 +16,9 @@ namespace ARSoft.Reporting
         void CrLf();
 
         RenderContext Context { get; }
+
+        void SetCurrentX(int x);
+        
+        void SetCurrentY(int y);
     }
 }

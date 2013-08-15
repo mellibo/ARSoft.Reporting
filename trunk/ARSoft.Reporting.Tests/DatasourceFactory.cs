@@ -7,7 +7,20 @@
     {
         public static TestModel GetDatasourceSimpleObject()
         {
-            var datasource = new TestModel { Fecha = new DateTime(2000, 1, 2), Nombre = "pepe1", Numero = 1.5m, NumeroEntero = 1 };
+            var datasource = new TestModel
+                {
+                    Fecha = new DateTime(2000, 1, 2),
+                    Nombre = "pepe1",
+                    Numero = 1.5m,
+                    NumeroEntero = 1,
+                    Hijos =
+                        new List<TestModelHijo>
+                            {
+                                new TestModelHijo { FechaHijo = DateTime.Now, NombreHijo = "Hijo1", NumeroHijo = 1 },
+                                new TestModelHijo
+                                    { FechaHijo = DateTime.Now.AddDays(1), NombreHijo = "Hijo2", NumeroHijo = 2 }
+                            }
+                };
             return datasource;
         }
 
