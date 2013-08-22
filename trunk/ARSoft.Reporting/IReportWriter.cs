@@ -17,8 +17,12 @@ namespace ARSoft.Reporting
 
         RenderContext Context { get; }
 
+        int LastX { get; }
+
         void SetCurrentX(int x);
         
         void SetCurrentY(int y);
+
+        void StartRow(string itemTemplate);
     }
 }

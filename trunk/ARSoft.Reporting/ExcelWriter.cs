@@ -1,11 +1,12 @@
 namespace ARSoft.Reporting
 {
     using System;
-    using System.Dynamic;
     using System.IO;
 
-    using NPOI.HSSF.UserModel;
-    using NPOI.SS.UserModel;
+    using ARSoft.NPOI;
+
+    using global::NPOI.HSSF.UserModel;
+    using global::NPOI.SS.UserModel;
 
     public class ExcelWriter : IReportWriter
     {
@@ -23,8 +24,8 @@ namespace ARSoft.Reporting
 
         public ExcelWriter()
         {
-            this.lastX = 0;
-            this.lastY = -1;
+            this.lastX = -1;
+            this.lastY = 0;
         }
 
         public void StartRender(Stream streamToWrite)
@@ -54,12 +55,12 @@ namespace ARSoft.Reporting
 
         public void WriteTextElement(int? x, int? y, string text)
         {
-            if (!x.HasValue) x = lastX;
-            if (!y.HasValue) y = ++lastY;
+            if (!x.HasValue) x = ++lastX;
+            if (!y.HasValue) y = lastY;
             lastX = x.Value;
             lastY = y.Value;
-            var row = this.sheet.GetRow(x.Value) ?? this.sheet.CreateRow(x.Value);
-            var cell = row.GetCell(y.Value) ?? row.CreateCell(y.Value);
+            var row = this.sheet.GetRow(y.Value) ?? this.sheet.CreateRow(y.Value);
+            var cell = row.GetCell(x.Value) ?? row.CreateCell(x.Value);
             cell.SetCellValue(text);
         }
 
@@ -68,8 +69,8 @@ namespace ARSoft.Reporting
         /// </summary>
         public void CrLf()
         {
-            this.lastX++;
-            this.lastY = -1;
+            this.lastX = -1;
+            this.lastY++;
         }
 
         public RenderContext Context
@@ -77,6 +78,14 @@ namespace ARSoft.Reporting
             get
             {
                 return this.context;
+            }
+        }
+
+        public int LastX
+        {
+            get
+            {
+                return this.lastX;
             }
         }
 
@@ -88,6 +97,16 @@ namespace ARSoft.Reporting
         public void SetCurrentY(int y)
         {
             this.lastY = y;
+        }
+
+        public void StartRow(string itemTemplate)
+        {
+            if (!string.IsNullOrWhiteSpace(itemTemplate))
+            {
+                var sheetTemplate = workbook.GetSheet("template");
+
+                this.sheet.CopyRow(sheetTemplate, int.Parse(itemTemplate), this.lastY);
+            }
         }
 
         private void CreateWorkbook(string template)

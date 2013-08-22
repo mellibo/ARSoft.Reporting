@@ -52,6 +52,7 @@
     <Compile Include="ExcelWriter.cs" />
     <Compile Include="ExpressionContent.cs" />
     <Compile Include="ExpressionEvaluator.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="IReportWriter.cs" />
     <Compile Include="ListContent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

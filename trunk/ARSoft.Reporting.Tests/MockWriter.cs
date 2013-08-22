@@ -8,8 +8,7 @@ namespace ARSoft.Reporting.Tests
 
     public class MockWriter : IReportWriter
     {
-        //TODO MockWriter tiene logica de manejo de xy que debe estar en un SUT en lugar de un mock
-
+        // TODO MockWriter tiene logica de manejo de xy que debe estar en un SUT en lugar de un mock
         private readonly RenderContext context;
 
         private int lastX;
@@ -23,6 +22,8 @@ namespace ARSoft.Reporting.Tests
         public MockWriter(RenderContext context)
         {
             this.context = context;
+            this.lastX = -1;
+            this.lastY = 0;
         }
 
         public int WriteCount
@@ -83,8 +84,8 @@ namespace ARSoft.Reporting.Tests
 
         public void WriteTextElement(int? x, int? y, string text)
         {
-            if (!x.HasValue) x = lastX;
-            if (!y.HasValue) y = ++lastY;
+            if (!x.HasValue) x = ++lastX;
+            if (!y.HasValue) y = lastY;
             lastX = x.Value;
             lastY = y.Value;
 
@@ -94,6 +95,8 @@ namespace ARSoft.Reporting.Tests
         public void CrLf()
         {
             this.rowCount++;
+            this.lastX = -1;
+            this.lastY++;
         }
 
         public RenderContext Context
@@ -104,6 +107,14 @@ namespace ARSoft.Reporting.Tests
             }
         }
 
+        public int LastX
+        {
+            get
+            {
+                return this.lastX;
+            }
+        }
+
         public void SetCurrentX(int x)
         {
             this.lastX = x;
@@ -111,7 +122,12 @@ namespace ARSoft.Reporting.Tests
 
         public void SetCurrentY(int y)
         {
-            this.lastY = y - 1;
+            this.lastY = y;
+        }
+
+        public void StartRow(string itemTemplate)
+        {
+            
         }
     }
 

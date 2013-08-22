@@ -3,12 +3,13 @@
     using System.IO;
     using System.Linq;
 
-    using NPOI.HSSF.UserModel;
-    using NPOI.SS.UserModel;
+    using global::NPOI.HSSF.UserModel;
 
     using NUnit.Framework;
 
     using SharpTestsEx;
+
+    using global::NPOI.SS.UserModel;
 
     [TestFixture]
     public class ExcelWriterTests
@@ -61,7 +62,7 @@
             var sheet = GetSheet(this.filename);
             foreach (var content in reportDefinition.Contents.Contents.OfType<StaticContent>())
             {
-                sheet.GetRow(content.X.Value).GetCell(content.Y.Value).StringCellValue.Should().Be.EqualTo(content.Text);
+                sheet.GetRow(content.Y.Value).GetCell(content.X.Value).StringCellValue.Should().Be.EqualTo(content.Text);
             }
         }
 
@@ -85,7 +86,7 @@
             var row = sheet.GetRow(0);
             for (int i = 0; i < reportDefinition.Contents.Contents.Count(); i++)
             {
-                row.Cells[i].ColumnIndex.Should().Be.EqualTo(i);
+                row.Cells[i].ColumnIndex.Should("cell" + i).Be.EqualTo(i);
             }
         }
 
@@ -141,6 +142,41 @@
             var sheet = GetSheet(this.filename);
             sheet.GetRow(0).GetCell(5, MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
                 "template");
+        }
+
+        [Test]
+        public void ListContentEmpiezaARenderizarDesdeUnaPosicionXY()
+        {
+            // arrange
+            var listContent = ListContentWithRowNumber();
+            var stream = this.GetStreamToWrite();
+            var writer = CreateExcelWriter();
+            var template = "template.xlt";
+            writer.StartRender(stream, template);
+
+            // act
+            listContent.X = 5;
+            listContent.Y = 2;
+            listContent.Write(writer, DatasourceFactory.GetDatasourceList());
+
+            writer.EndRender();
+            stream.Close();
+
+            // assert
+            var sheet = GetSheet(this.filename);
+            sheet.GetRow(listContent.Y.Value).GetCell(listContent.X.Value, MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
+                "1");
+            sheet.GetRow(listContent.Y.Value + 1).GetCell(listContent.X.Value, MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
+                "2");
+            sheet.GetRow(listContent.Y.Value + 2).GetCell(listContent.X.Value, MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
+                "3");
+        }
+
+        private static ListContent ListContentWithRowNumber()
+        {
+            var listContent = new ListContent();
+            listContent.Content.AddContent(new ExpressionContent { Expression = "Context.ItemNumber" });
+            return listContent;
         }
 
         private FileStream GetStreamToWrite()
