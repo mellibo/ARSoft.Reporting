@@ -9,7 +9,7 @@
 
     using SharpTestsEx;
 
-    using global::NPOI.SS.UserModel;
+    using NPOIUserModel = global::NPOI.SS.UserModel;
 
     [TestFixture]
     public class ExcelWriterTests
@@ -140,7 +140,7 @@
 
             // assert
             var sheet = GetSheet(this.filename);
-            sheet.GetRow(0).GetCell(5, MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
+            sheet.GetRow(0).GetCell(5, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
                 "template");
         }
 
@@ -164,14 +164,59 @@
 
             // assert
             var sheet = GetSheet(this.filename);
-            sheet.GetRow(listContent.Y.Value).GetCell(listContent.X.Value, MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
+            sheet.GetRow(listContent.Y.Value).GetCell(listContent.X.Value, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
                 "1");
-            sheet.GetRow(listContent.Y.Value + 1).GetCell(listContent.X.Value, MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
+            sheet.GetRow(listContent.Y.Value + 1).GetCell(listContent.X.Value, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
                 "2");
-            sheet.GetRow(listContent.Y.Value + 2).GetCell(listContent.X.Value, MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
+            sheet.GetRow(listContent.Y.Value + 2).GetCell(listContent.X.Value, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
                 "3");
         }
 
+        [Test]
+        public void ListContentPuedeSuministrarUnItemTemplate()
+        {
+            // arrange
+            var listContent = ListContentWithRowNumber();
+            var stream = this.GetStreamToWrite();
+            var writer = CreateExcelWriter();
+            var template = "template.xlt";
+            writer.StartRender(stream, template);
+
+            // act
+            listContent.X = 5;
+            listContent.Y = 2;
+            listContent.ItemTemplates.Add(typeof(ExcelWriter), "15");
+            listContent.Write(writer, DatasourceFactory.GetDatasourceList());
+
+            writer.EndRender();
+            stream.Close();
+
+            // assert
+            var sheet = GetSheet(this.filename);
+            for (int i = 0; i < DatasourceFactory.GetDatasourceList().Count; i++)
+            {
+                sheet.GetRow(listContent.Y.Value + i).GetCell(listContent.X.Value + 1, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).NumericCellValue.Should().Be.EqualTo(
+                    2);
+                sheet.GetRow(listContent.Y.Value + i).GetCell(listContent.X.Value + 2, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).NumericCellValue.Should().Be.EqualTo(
+                    3);
+                sheet.GetRow(listContent.Y.Value + i).GetCell(listContent.X.Value + 3, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).NumericCellValue.Should().Be.EqualTo(
+                    4);
+                sheet.GetRow(listContent.Y.Value + i).GetCell(listContent.X.Value + 4, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).NumericCellValue.Should().Be.EqualTo(
+                    5);
+                for (var j = 0; j < 5; j++)
+                {
+                    sheet.GetRow(listContent.Y.Value + i).GetCell(
+                        listContent.X.Value + j, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).CellStyle.Alignment.
+                        Should().Be.EqualTo(NPOIUserModel.HorizontalAlignment.CENTER);
+                    sheet.GetRow(listContent.Y.Value + i).GetCell(
+                        listContent.X.Value + j, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).CellStyle.
+                        BorderBottom.Should().Be.EqualTo(NPOIUserModel.BorderStyle.THIN);
+                    sheet.GetRow(listContent.Y.Value + i).GetCell(
+                        listContent.X.Value + j, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).CellStyle.BorderTop.
+                        Should().Be.EqualTo(NPOIUserModel.BorderStyle.THIN);
+                }
+            }
+        }
         private static ListContent ListContentWithRowNumber()
         {
             var listContent = new ListContent();
@@ -184,7 +229,7 @@
             return File.Open(this.filename, FileMode.OpenOrCreate, FileAccess.ReadWrite);
         }
 
-        private static ISheet GetSheet(string filename)
+        private static NPOIUserModel.ISheet GetSheet(string filename)
         {
             var excelFile = new FileStream(filename, FileMode.Open, FileAccess.Read);
             var workbook = new HSSFWorkbook(excelFile, true);

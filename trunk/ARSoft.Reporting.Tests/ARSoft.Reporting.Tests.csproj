@@ -71,7 +71,7 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="template.xlt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>

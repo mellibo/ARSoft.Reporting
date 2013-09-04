@@ -94,7 +94,6 @@
                     worksheet.AddMergedRegion(newCellRangeAddress);
                 }
             }
-
         }
 
         /// <summary>

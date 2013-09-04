@@ -1,7 +1,9 @@
 namespace ARSoft.Reporting
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
 
     using ARSoft.NPOI;
 
@@ -21,6 +23,8 @@ namespace ARSoft.Reporting
         private int lastX;
 
         private int lastY;
+
+        private List<ICellStyle> styles = new List<ICellStyle>();
 
         public ExcelWriter()
         {
@@ -105,7 +109,24 @@ namespace ARSoft.Reporting
             {
                 var sheetTemplate = workbook.GetSheet("template");
 
+                var rowTemplate = sheetTemplate.GetRow(int.Parse(itemTemplate));
+                if (styles.Count == 0)
+                {
+                    foreach (var cell in rowTemplate.Cells)
+                    {
+                        var style = sheetTemplate.Workbook.CreateCellStyle();
+                        style.CloneStyleFrom(cell.CellStyle);
+                        styles.Add(style);
+                    }
+                }
+
                 this.sheet.CopyRow(sheetTemplate, int.Parse(itemTemplate), this.lastY);
+
+                var rowCopied = this.sheet.GetRow(this.lastY);
+                for (int j = 0; j < styles.Count; j++)
+                {
+                    rowCopied.Cells.First(x => x.ColumnIndex == rowTemplate.Cells[j].ColumnIndex).CellStyle = styles[j];
+                }
             }
         }
 
