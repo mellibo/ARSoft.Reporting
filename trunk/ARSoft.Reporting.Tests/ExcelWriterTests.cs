@@ -145,6 +145,26 @@
         }
 
         [Test]
+        public void AlRenderizarDebeQuedarActivaLaHojaRenderizada()
+        {
+            // arrange
+            var writer = CreateExcelWriter();
+            var stream = this.GetStreamToWrite();
+
+            // act
+            var template = "template.xlt";
+            writer.StartRender(stream, template);
+            writer.WriteTextElement(null, null, "pepe");
+            writer.EndRender();
+            stream.Close();
+
+            // assert
+            var excelFile = this.GetStreamToWrite();
+            var xl = new HSSFWorkbook(excelFile, true);
+            xl.GetSheetAt(xl.ActiveSheetIndex).SheetName.ToLower().Should().Be("hoja1");
+        }
+
+        [Test]
         public void ListContentEmpiezaARenderizarDesdeUnaPosicionXY()
         {
             // arrange

@@ -49,11 +49,13 @@ namespace ARSoft.Reporting
             this.CreateWorkbook(template);
 
             this.sheet = this.workbook.GetSheet("hoja1") ?? this.workbook.CreateSheet("hoja1");
+            this.workbook.SetActiveSheet(this.workbook.GetSheetIndex(this.sheet.SheetName));
             this.streamToWrite = streamToWrite;            
         }
 
         public void EndRender()
         {
+            if (this.workbook.GetSheet("template") != null) this.workbook.RemoveSheetAt(this.workbook.GetSheetIndex("template"));
             this.workbook.Write(this.streamToWrite);
         }
 
