@@ -82,7 +82,7 @@
             // If there are are any merged regions in the source row, copy to new row
             for (int i = 0; i < sourceSheet.NumMergedRegions; i++)
             {
-                CellRangeAddress cellRangeAddress = worksheet.GetMergedRegion(i);
+                CellRangeAddress cellRangeAddress = sourceSheet.GetMergedRegion(i);
                 if (cellRangeAddress.FirstRow == sourceRow.RowNum)
                 {
                     CellRangeAddress newCellRangeAddress = new CellRangeAddress(newRow.RowNum,

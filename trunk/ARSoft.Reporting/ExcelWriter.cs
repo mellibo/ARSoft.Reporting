@@ -105,28 +105,30 @@ namespace ARSoft.Reporting
 
         public void StartRow(string itemTemplate)
         {
-            if (!string.IsNullOrWhiteSpace(itemTemplate))
+            if (string.IsNullOrWhiteSpace(itemTemplate))
             {
-                var sheetTemplate = workbook.GetSheet("template");
+                return;
+            }
 
-                var rowTemplate = sheetTemplate.GetRow(int.Parse(itemTemplate));
-                if (styles.Count == 0)
+            var sheetTemplate = this.workbook.GetSheet("template");
+
+            var rowTemplate = sheetTemplate.GetRow(int.Parse(itemTemplate));
+            if (this.styles.Count == 0)
+            {
+                foreach (var cell in rowTemplate.Cells)
                 {
-                    foreach (var cell in rowTemplate.Cells)
-                    {
-                        var style = sheetTemplate.Workbook.CreateCellStyle();
-                        style.CloneStyleFrom(cell.CellStyle);
-                        styles.Add(style);
-                    }
+                    var style = sheetTemplate.Workbook.CreateCellStyle();
+                    style.CloneStyleFrom(cell.CellStyle);
+                    this.styles.Add(style);
                 }
+            }
 
-                this.sheet.CopyRow(sheetTemplate, int.Parse(itemTemplate), this.lastY);
+            this.sheet.CopyRow(sheetTemplate, int.Parse(itemTemplate), this.lastY);
 
-                var rowCopied = this.sheet.GetRow(this.lastY);
-                for (int j = 0; j < styles.Count; j++)
-                {
-                    rowCopied.Cells.First(x => x.ColumnIndex == rowTemplate.Cells[j].ColumnIndex).CellStyle = styles[j];
-                }
+            var rowCopied = this.sheet.GetRow(this.lastY);
+            for (int j = 0; j < this.styles.Count; j++)
+            {
+                rowCopied.Cells.First(x => x.ColumnIndex == rowTemplate.Cells[j].ColumnIndex).CellStyle = this.styles[j];
             }
         }
 

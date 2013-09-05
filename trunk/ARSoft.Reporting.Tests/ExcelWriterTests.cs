@@ -217,6 +217,36 @@
                 }
             }
         }
+
+        [Test]
+        public void SiElItemTemplateDeListContentTieneCeldasConMergeSeDebeRespetarElMerge()
+        {
+            // arrange
+            var listContent = ListContentWithRowNumber();
+            var stream = this.GetStreamToWrite();
+            var writer = CreateExcelWriter();
+            var template = "template.xlt";
+            writer.StartRender(stream, template);
+
+            // act
+            listContent.X = 5;
+            listContent.Y = 2;
+            listContent.ItemTemplates.Add(typeof(ExcelWriter), "15");
+            listContent.Write(writer, DatasourceFactory.GetDatasourceList());
+
+            writer.EndRender();
+            stream.Close();
+
+            // assert
+            var sheet = GetSheet(this.filename);
+            for (int i = 0; i < DatasourceFactory.GetDatasourceList().Count; i++)
+            {
+                sheet.GetRow(listContent.Y.Value + i).GetCell(listContent.X.Value + 5, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).NumericCellValue.Should().Be.EqualTo(6);
+                sheet.GetRow(listContent.Y.Value + i).GetCell(listContent.X.Value + 5).IsMergedCell.Should().Be(true);
+                sheet.GetRow(listContent.Y.Value + i).GetCell(listContent.X.Value + 6).IsMergedCell.Should().Be(true);
+            }
+        }
+
         private static ListContent ListContentWithRowNumber()
         {
             var listContent = new ListContent();
