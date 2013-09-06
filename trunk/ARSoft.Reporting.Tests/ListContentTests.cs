@@ -1,15 +1,15 @@
 ﻿namespace ARSoft.Reporting.Tests
 {
     using System.IO;
+    using System.Linq;
+
+    using global::NPOI.HSSF.UserModel;
+
+    using global::NPOI.SS.UserModel;
 
     using NUnit.Framework;
 
     using SharpTestsEx;
-
-    using System.Linq;
-
-    using global::NPOI.HSSF.UserModel;
-    using global::NPOI.SS.UserModel;
 
     [TestFixture]
     public class ListContentTests
@@ -117,37 +117,6 @@
             {
                 writer.WritedElements.ToArray()[i].Text.Should().Be.EqualTo((i + 1).ToString());
             }
-        }
-
-        [Test]
-        public void ListContentPuedeDefinirUnItemTemplateParaUnWriter()
-        {
-            // arrange
-            var listContent = ListContentWith1StaticContent();
-            listContent.X = 5;
-            listContent.Content.AddContent(new ExpressionContent { Expression = "Context.ItemNumber", X  = 2 });
-            listContent.Content.AddContent(new ExpressionContent { Expression = "model.Nombre", X = 3 });
-            listContent.Content.AddContent(new ExpressionContent { Expression = "model.Fecha", X = 4 });
-            var writer = WriterFactory.ExcelWriter();
-            var datasourceList = DatasourceFactory.GetDatasourceList();
-
-            // act
-            var stream = File.Open("planilla.xls", FileMode.OpenOrCreate, FileAccess.ReadWrite);
-            listContent.ItemTemplates.Add(writer.GetType(), "6");
-            var template = "template.xlt";
-            writer.StartRender(stream, template);
-            listContent.Write(writer, datasourceList);
-            writer.EndRender();
-            stream.Close();
-
-            // assert
-            var sheet = GetSheet("planilla.xls");
-            sheet.GetRow(0).GetCell(5, MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
-                "template");
-            sheet.GetRow(1).GetCell(5, MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
-                "template");
-            sheet.GetRow(2).GetCell(5, MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
-                "template");
         }
 
         private static ISheet GetSheet(string filename)

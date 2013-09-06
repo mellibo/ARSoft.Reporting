@@ -1,5 +1,6 @@
 ﻿namespace ARSoft.Reporting.Tests
 {
+    using System;
     using System.IO;
     using System.Linq;
 
@@ -15,6 +16,13 @@
     public class ExcelWriterTests
     {
         private string filename;
+
+        private FileStream streamToWrite;
+
+        private ExcelWriter writer;
+
+        private string template;
+
         //TODO usar directametne ExcelWriter y no ReportDedinition
 
         [SetUp]
@@ -22,20 +30,30 @@
         {
             this.filename = "report.xls";
             if (File.Exists(this.filename)) File.Delete(this.filename);
+            
+            writer = CreateExcelWriter();
+            this.streamToWrite = this.GetStreamToWrite();
+
+            template = "template.xlt";
+            writer.StartRender(this.streamToWrite, template);
         }
         
+        [TearDown]
+        public void TearDown()
+        {
+            if (this.streamToWrite != null) this.streamToWrite.Dispose();
+        }
+
         [Test]
         public void UnReportDefinitionSePuedeRenderizarComoExcel()
         {
             // arrange
             var reportDefinition = ReportFactory.GetReport();
             var datasource = DatasourceFactory.GetDatasourceSimpleObject();
-            var streamToWrite = this.GetStreamToWrite();
+            var renderer = CreateReportRenderer();
 
             // act
-            var excelWriter = CreateExcelWriter();
-            var renderer = new ReportRenderer(excelWriter);
-            renderer.Render(datasource, reportDefinition, streamToWrite);
+            renderer.Render(datasource, reportDefinition, this.streamToWrite);
             streamToWrite.Close();
 
             // assert
@@ -50,11 +68,9 @@
             // arrange
             var reportDefinition = ReportFactory.GetReport();
             var datasource = DatasourceFactory.GetDatasourceSimpleObject();
-            var streamToWrite = this.GetStreamToWrite();
+            var renderer = CreateReportRenderer();
 
             // act
-            var excelWriter = CreateExcelWriter();
-            var renderer = new ReportRenderer(excelWriter);
             renderer.Render(datasource, reportDefinition, streamToWrite);
             streamToWrite.Close();
 
@@ -72,11 +88,9 @@
             // arrange
             var reportDefinition = ReportFactory.GetReportSinCoordenadas();
             var datasource = DatasourceFactory.GetDatasourceSimpleObject();
-            var excelWriter = CreateExcelWriter();
-            var streamToWrite = this.GetStreamToWrite();
+            var renderer = CreateReportRenderer();
 
             // act
-            var renderer = new ReportRenderer(excelWriter);
             renderer.Render(datasource, reportDefinition, streamToWrite);
             streamToWrite.Close();
 
@@ -101,17 +115,13 @@
             var fechaContent = new ExpressionContent();
             fechaContent.Expression = "model.Fecha";
             listContent.Content.AddContent(fechaContent);
-            var writer = WriterFactory.ExcelWriter();
             var datasource = DatasourceFactory.GetDatasourceList();
-            var streamToWrite = this.GetStreamToWrite();
 
             // act
-            writer.StartRender(streamToWrite);
             listContent.Write(writer, datasource);
-            writer.EndRender();
-            streamToWrite.Close();
 
             // assert
+            this.EndRenderCloseStream();
             var sheet = GetSheet(this.filename);
             var i = 0;
             foreach (var item in datasource)
@@ -124,21 +134,22 @@
             }
         }
 
+        private void EndRenderCloseStream()
+        {
+            this.writer.EndRender();
+            this.streamToWrite.Close();
+        }
+
         [Test]
         public void SePuedeREnderizarSobreUnaPlantilla()
         {
             // arrange
-            var writer = CreateExcelWriter();
-            var stream = this.GetStreamToWrite();
 
             // act
-            var template = "template.xlt";
-            writer.StartRender(stream, template);
             writer.WriteTextElement(null, null, "pepe");
-            writer.EndRender();
-            stream.Close();
 
             // assert
+            this.EndRenderCloseStream();
             var sheet = GetSheet(this.filename);
             sheet.GetRow(0).GetCell(5, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
                 "template");
@@ -148,17 +159,12 @@
         public void AlRenderizarDebeQuedarActivaLaHojaRenderizada()
         {
             // arrange
-            var writer = CreateExcelWriter();
-            var stream = this.GetStreamToWrite();
 
             // act
-            var template = "template.xlt";
-            writer.StartRender(stream, template);
             writer.WriteTextElement(null, null, "pepe");
-            writer.EndRender();
-            stream.Close();
 
             // assert
+            this.EndRenderCloseStream();
             var excelFile = this.GetStreamToWrite();
             var xl = new HSSFWorkbook(excelFile, true);
             xl.GetSheetAt(xl.ActiveSheetIndex).SheetName.ToLower().Should().Be("hoja1");
@@ -169,20 +175,14 @@
         {
             // arrange
             var listContent = ListContentWithRowNumber();
-            var stream = this.GetStreamToWrite();
-            var writer = CreateExcelWriter();
-            var template = "template.xlt";
-            writer.StartRender(stream, template);
 
             // act
             listContent.X = 5;
             listContent.Y = 2;
             listContent.Write(writer, DatasourceFactory.GetDatasourceList());
 
-            writer.EndRender();
-            stream.Close();
-
             // assert
+            this.EndRenderCloseStream();
             var sheet = GetSheet(this.filename);
             sheet.GetRow(listContent.Y.Value).GetCell(listContent.X.Value, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).StringCellValue.Should().Be.EqualTo(
                 "1");
@@ -197,45 +197,45 @@
         {
             // arrange
             var listContent = ListContentWithRowNumber();
-            var stream = this.GetStreamToWrite();
-            var writer = CreateExcelWriter();
-            var template = "template.xlt";
-            writer.StartRender(stream, template);
 
             // act
-            listContent.X = 5;
-            listContent.Y = 2;
             listContent.ItemTemplates.Add(typeof(ExcelWriter), "15");
             listContent.Write(writer, DatasourceFactory.GetDatasourceList());
 
-            writer.EndRender();
-            stream.Close();
-
             // assert
+            this.EndRenderCloseStream();
             var sheet = GetSheet(this.filename);
             for (int i = 0; i < DatasourceFactory.GetDatasourceList().Count; i++)
             {
-                sheet.GetRow(listContent.Y.Value + i).GetCell(listContent.X.Value + 1, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).NumericCellValue.Should().Be.EqualTo(
-                    2);
-                sheet.GetRow(listContent.Y.Value + i).GetCell(listContent.X.Value + 2, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).NumericCellValue.Should().Be.EqualTo(
-                    3);
-                sheet.GetRow(listContent.Y.Value + i).GetCell(listContent.X.Value + 3, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).NumericCellValue.Should().Be.EqualTo(
-                    4);
-                sheet.GetRow(listContent.Y.Value + i).GetCell(listContent.X.Value + 4, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).NumericCellValue.Should().Be.EqualTo(
-                    5);
+                // en el template en col 5 empieza la serie 1,2,3,4,5 con alineamineto centrado y border THIN
+                sheet.GetRow(i).GetCell(5, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).NumericCellValue.Should().Be.EqualTo(1);
+                sheet.GetRow(i).GetCell(6, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).NumericCellValue.Should().Be.EqualTo(2);
+                sheet.GetRow(i).GetCell(7, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).NumericCellValue.Should().Be.EqualTo(3);
+                sheet.GetRow(i).GetCell(8, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).NumericCellValue.Should().Be.EqualTo(4);
+                sheet.GetRow(i).GetCell(9, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).NumericCellValue.Should().Be.EqualTo(5);
                 for (var j = 0; j < 5; j++)
                 {
-                    sheet.GetRow(listContent.Y.Value + i).GetCell(
-                        listContent.X.Value + j, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).CellStyle.Alignment.
+                    sheet.GetRow(i).GetCell(5 + j, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).CellStyle.Alignment.
                         Should().Be.EqualTo(NPOIUserModel.HorizontalAlignment.CENTER);
-                    sheet.GetRow(listContent.Y.Value + i).GetCell(
-                        listContent.X.Value + j, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).CellStyle.
+                    sheet.GetRow(i).GetCell(5 + j, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).CellStyle.
                         BorderBottom.Should().Be.EqualTo(NPOIUserModel.BorderStyle.THIN);
-                    sheet.GetRow(listContent.Y.Value + i).GetCell(
-                        listContent.X.Value + j, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).CellStyle.BorderTop.
+                    sheet.GetRow(i).GetCell(5 + j, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).CellStyle.BorderTop.
                         Should().Be.EqualTo(NPOIUserModel.BorderStyle.THIN);
                 }
             }
+        }
+
+        [Test]
+        public void ListContentSiElItemTemplateNoTieneNadaGeneraInvalidOperationException()
+        {
+            // arrange
+            var listContent = ListContentWithRowNumber();
+
+            // act
+            listContent.ItemTemplates.Add(typeof(ExcelWriter), "100");
+            Executing.This(() => listContent.Write(writer, DatasourceFactory.GetDatasourceList())).Should().Throw<InvalidOperationException>();
+
+            this.EndRenderCloseStream();
         }
 
         [Test]
@@ -243,27 +243,19 @@
         {
             // arrange
             var listContent = ListContentWithRowNumber();
-            var stream = this.GetStreamToWrite();
-            var writer = CreateExcelWriter();
-            var template = "template.xlt";
-            writer.StartRender(stream, template);
 
             // act
-            listContent.X = 5;
-            listContent.Y = 2;
             listContent.ItemTemplates.Add(typeof(ExcelWriter), "15");
             listContent.Write(writer, DatasourceFactory.GetDatasourceList());
 
-            writer.EndRender();
-            stream.Close();
-
             // assert
+            this.EndRenderCloseStream();
             var sheet = GetSheet(this.filename);
             for (int i = 0; i < DatasourceFactory.GetDatasourceList().Count; i++)
             {
-                sheet.GetRow(listContent.Y.Value + i).GetCell(listContent.X.Value + 5, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).NumericCellValue.Should().Be.EqualTo(6);
-                sheet.GetRow(listContent.Y.Value + i).GetCell(listContent.X.Value + 5).IsMergedCell.Should().Be(true);
-                sheet.GetRow(listContent.Y.Value + i).GetCell(listContent.X.Value + 6).IsMergedCell.Should().Be(true);
+                sheet.GetRow(i).GetCell(10, NPOIUserModel.MissingCellPolicy.CREATE_NULL_AS_BLANK).NumericCellValue.Should().Be.EqualTo(6);
+                sheet.GetRow(i).GetCell(10).IsMergedCell.Should().Be(true);
+                sheet.GetRow(i).GetCell(11).IsMergedCell.Should().Be(true);
             }
         }
 
@@ -291,6 +283,13 @@
         {
             var excelWriter = WriterFactory.ExcelWriter();
             return excelWriter;
+        }
+
+        private static ReportRenderer CreateReportRenderer()
+        {
+            var excelWriter = CreateExcelWriter();
+            var renderer = new ReportRenderer(excelWriter);
+            return renderer;
         }
     }
 }

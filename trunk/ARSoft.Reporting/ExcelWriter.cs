@@ -115,6 +115,8 @@ namespace ARSoft.Reporting
             var sheetTemplate = this.workbook.GetSheet("template");
 
             var rowTemplate = sheetTemplate.GetRow(int.Parse(itemTemplate));
+            if (rowTemplate == null) throw new InvalidOperationException("Item Template apunta a una fila vacia");
+
             if (this.styles.Count == 0)
             {
                 foreach (var cell in rowTemplate.Cells)
