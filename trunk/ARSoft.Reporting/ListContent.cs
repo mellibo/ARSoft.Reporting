@@ -12,6 +12,8 @@ namespace ARSoft.Reporting
 
         private Dictionary<Type, string> itemTemplates;
 
+        private int itemNumber;
+
         public ListContent()
         {
             this.itemTemplates = new Dictionary<Type, string>();
@@ -34,7 +36,8 @@ namespace ARSoft.Reporting
 
             if (this.Y.HasValue) writer.SetCurrentY(this.Y.Value);
             var internalDatasource = this.GetInternalDatasource(datasource);
-            writer.Context.ItemNumber = 1;
+            this.itemNumber = 1;
+            writer.Context.ItemNumber = this.itemNumber;
             var itemTemplate = this.itemTemplates.ContainsKey(writer.GetType())
                                    ? this.itemTemplates[writer.GetType()]
                                    : null;
@@ -52,12 +55,14 @@ namespace ARSoft.Reporting
                     writer.SetCurrentX(listX);
                 }
 
-                writer.Context.ItemNumber++;
+                this.itemNumber++;
+                writer.Context.ItemNumber = this.itemNumber;
             }
         }
 
         private IEnumerable GetInternalDatasource(object datasource)
         {
+            if (this.DataSource != null) return this.DataSource;
             IEnumerable internalDatasource;
             if (!string.IsNullOrWhiteSpace(this.DataSourceExpression))
             {
@@ -92,5 +97,8 @@ namespace ARSoft.Reporting
                 return this.itemTemplates;
             }
         }
+
+        public IEnumerable DataSource { get; set; }
+
     }
 }

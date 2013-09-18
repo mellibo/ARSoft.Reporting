@@ -1,5 +1,6 @@
 ﻿namespace ARSoft.Reporting.Tests
 {
+    using System;
     using System.IO;
     using System.Linq;
 
@@ -116,6 +117,38 @@
             for (int i = 0; i < writer.TextWrited.Count(); i++)
             {
                 writer.WritedElements.ToArray()[i].Text.Should().Be.EqualTo((i + 1).ToString());
+            }
+        }
+
+        [Test]
+        public void ConListAnidadosDebeMantenerElItemNumberDeCadaListaIndependiente()
+        {
+            // arrange
+            var listContentMaster = new ListContent();
+            listContentMaster.Content.AddContent(new ExpressionContent { Expression = "Context.ItemNumber" });
+            var listContentChild = new ListContent();
+            listContentMaster.Content.AddContent(listContentChild);
+            listContentChild.Content.AddContent(new ExpressionContent { Expression = "Context.ItemNumber" });
+            var datasourceList = DatasourceFactory.GetDatasourceList();
+            listContentChild.DataSource = datasourceList;
+            var writer = WriterFactory.MockWriter();
+
+            // act
+            listContentMaster.Write(writer, datasourceList);
+
+            // assert
+            int textWritedCounter = 0;
+            for (int i = 0; i < datasourceList.Count; i++)
+            {
+                Console.WriteLine(textWritedCounter.ToString() + ": " + writer.WritedElements.ToArray()[textWritedCounter].Text);
+                writer.WritedElements.ToArray()[textWritedCounter].Text.Should().Be.EqualTo((i + 1).ToString());
+                textWritedCounter++;
+                for (int j = 0; j < datasourceList.Count; j++)
+                {
+                    Console.WriteLine(textWritedCounter.ToString() + ": " + writer.WritedElements.ToArray()[textWritedCounter].Text);
+                    writer.WritedElements.ToArray()[textWritedCounter].Text.Should().Be.EqualTo((j + 1).ToString());
+                    textWritedCounter++;
+                }
             }
         }
 
